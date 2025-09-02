@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 export function activate(context: vscode.ExtensionContext) {
-  // Define states and corresponding dark colors
+  // Define the states and corresponding dark-colors
   const states: { [key: string]: string } = {
     DEFAULT: "#444444",
     ATTACKER: "#800000",
@@ -20,7 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
     100
   );
 
-  // Ensure status bar is rendered on startup
+  // Ensure status-bar is rendered on startup
   setTimeout(() => {
     updateStatusBar(item, current, flowInfo, states);
     item.show();
@@ -33,13 +33,13 @@ export function activate(context: vscode.ExtensionContext) {
         "statusBar.background": states[current],
         "statusBar.noFolderBackground": states[current],
         "statusBar.debuggingBackground": states[current],
-        "statusBar.foreground": "#FFFFFF", // always white text
+        "statusBar.foreground": "#FFFFFF", // always white-text
       },
       vscode.ConfigurationTarget.Global
     );
   }, 100);
 
-  // Command 1: Toggle state
+  // Command A: Toggle state
   const selectStateCmd = vscode.commands.registerCommand(
     "statusbarToggle.selectState",
     async () => {
@@ -69,7 +69,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  // Command 2: Add flow info
+  // Command B: Add flow info
   const addFlowInfoCmd = vscode.commands.registerCommand(
     "statusbarToggle.addFlowInfo",
     async () => {

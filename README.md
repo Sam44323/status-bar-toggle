@@ -61,6 +61,7 @@ Each state-changes both the **status bar text** and the **entire status bar colo
 - Both **state** and **flow info** are **saved** and restored on VS Code restart.
 - **Dark background** per state with **white text** for readability.
 - Click the status bar item or use the **Command Palette** to change states or add flow info.
+- Support for multi-window state
 
 ---
 

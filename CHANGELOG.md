@@ -1,4 +1,4 @@
-# Change Log
+# Change-Log
 
 All notable changes to the "statusbar-toggle" extension will be documented in this file.
 

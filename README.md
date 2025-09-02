@@ -1,7 +1,7 @@
 # Status Bar Toggle (Mindset-Sync)
 
 A lightweight VS Code extension that lets you **toggle between multiple states** (`DEFAULT`, `ATTACKER`, `USER`, `CORRECT-EXECUTION`) directly from the **status bar**.  
-Each state changes both the **status bar text** and the **entire status bar color** to a darker shade for clarity.
+Each state-changes both the **status bar text** and the **entire status bar color** to a darker shade for clarity.
 
 ---
 

@@ -2,42 +2,25 @@ import * as vscode from "vscode";
 
 export function activate(context: vscode.ExtensionContext) {
   const states: { [key: string]: string } = {
-    DEFAULT: "#222222", // very dark gray
-    ATTACKER: "#800000", // dark red / maroon
-    USER: "#4B0082", // indigo violet
+    DEFAULT: "#444444", // dark gray
+    ATTACKER: "#800000", // dark red
+    USER: "#6A0DAD", // dark violet
     "CORRECT-EXECUTION": "#006400", // dark green
   };
 
-  let current: keyof typeof states = "DEFAULT";
+  // Load saved state (fallback to DEFAULT)
+  let current =
+    context.globalState.get<string>("statusbarToggleState") || "DEFAULT";
 
-  // Create a status bar item
+  // Create status bar item
   const item = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left,
     100
   );
-  item.text = `$(person) ${current}`;
-  item.tooltip = "Click to select state";
-  item.command = "statusbarToggle.selectState";
+  updateStatusBar(item, current, states);
   item.show();
 
-  // Helper to update status bar background
-  const updateStatusBarColor = (color: string) => {
-    vscode.workspace.getConfiguration().update(
-      "workbench.colorCustomizations",
-      {
-        "statusBar.background": color,
-        "statusBar.noFolderBackground": color,
-        "statusBar.debuggingBackground": color,
-        "statusBar.foreground": "#FFFFFF", // ensure text is readable
-      },
-      vscode.ConfigurationTarget.Global
-    );
-  };
-
-  // Initial color
-  updateStatusBarColor(states[current]);
-
-  // Register command to show dropdown
+  // Register command
   const disposable = vscode.commands.registerCommand(
     "statusbarToggle.selectState",
     async () => {
@@ -46,15 +29,40 @@ export function activate(context: vscode.ExtensionContext) {
       });
 
       if (picked) {
-        current = picked as keyof typeof states;
-        item.text = `$(person) ${current}`;
-        updateStatusBarColor(states[current]);
+        current = picked;
+        updateStatusBar(item, current, states);
+
+        // persist across reloads
+        await context.globalState.update("statusbarToggleState", current);
+
+        // persist status bar background too
+        const config = vscode.workspace.getConfiguration();
+        config.update(
+          "workbench.colorCustomizations",
+          {
+            "statusBar.background": states[current],
+            "statusBar.noFolderBackground": states[current],
+            "statusBar.debuggingBackground": states[current],
+            "statusBar.foreground": "#FFFFFF", // always white text
+          },
+          vscode.ConfigurationTarget.Global
+        );
       }
     }
   );
 
   context.subscriptions.push(item);
   context.subscriptions.push(disposable);
+}
+
+function updateStatusBar(
+  item: vscode.StatusBarItem,
+  state: string,
+  states: { [key: string]: string }
+) {
+  item.text = `$(person) ${state}`;
+  item.tooltip = `Current state: ${state}`;
+  item.color = "#FFFFFF"; // always white text
 }
 
 export function deactivate() {}

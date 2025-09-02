@@ -11,6 +11,14 @@
   ],
   "activationEvents": [],
   "main": "./out/extension.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sam44323/status-bar-toggle"
+  },
+  "bugs": {
+    "url": "https://github.com/Sam44323/status-bar-toggle/issues"
+  },
+  "icon": "icon.png",
   "contributes": {
     "commands": [
       {

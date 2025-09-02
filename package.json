@@ -2,6 +2,7 @@
   "name": "statusbar-toggle",
   "displayName": "statusbar-toggle",
   "description": "toggle the status bar with the tags",
+  "license": "MIT",
   "publisher": "sam44323",
   "version": "0.0.10",
   "engines": {

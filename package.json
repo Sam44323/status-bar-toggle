@@ -1,7 +1,7 @@
 {
   "name": "statusbar-toggle",
   "displayName": "statusbar-toggle",
-  "description": "toggle the status bar with tags",
+  "description": "toggle the status bar with the tags",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.103.0"

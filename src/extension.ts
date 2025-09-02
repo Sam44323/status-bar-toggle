@@ -1,42 +1,59 @@
 import * as vscode from "vscode";
 
 export function activate(context: vscode.ExtensionContext) {
+  // Define states and corresponding dark colors
   const states: { [key: string]: string } = {
-    DEFAULT: "#444444", // dark gray
-    ATTACKER: "#800000", // dark red
-    USER: "#6A0DAD", // dark violet
-    "CORRECT-EXECUTION": "#006400", // dark green
+    DEFAULT: "#444444",
+    ATTACKER: "#800000",
+    USER: "#6A0DAD",
+    "CORRECT-EXECUTION": "#006400",
   };
 
-  // Load saved state (fallback to DEFAULT)
+  // Load workspace-scoped persisted state
   let current =
-    context.globalState.get<string>("statusbarToggleState") || "DEFAULT";
-  let flowInfo = context.globalState.get<string>("statusbarFlowInfo") || "";
+    context.workspaceState.get<string>("statusbarToggleState") || "DEFAULT";
+  let flowInfo = context.workspaceState.get<string>("statusbarFlowInfo") || "";
 
-  // Create status bar item
+  // Create the status bar item
   const item = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left,
     100
   );
-  updateStatusBar(item, current, flowInfo, states);
-  item.show();
 
-  // Command 1: Select State
+  // Ensure status bar is rendered on startup
+  setTimeout(() => {
+    updateStatusBar(item, current, flowInfo, states);
+    item.show();
+
+    // Restore background color
+    const config = vscode.workspace.getConfiguration();
+    config.update(
+      "workbench.colorCustomizations",
+      {
+        "statusBar.background": states[current],
+        "statusBar.noFolderBackground": states[current],
+        "statusBar.debuggingBackground": states[current],
+        "statusBar.foreground": "#FFFFFF", // always white text
+      },
+      vscode.ConfigurationTarget.Global
+    );
+  }, 100);
+
+  // Command 1: Toggle state
   const selectStateCmd = vscode.commands.registerCommand(
     "statusbarToggle.selectState",
     async () => {
       const picked = await vscode.window.showQuickPick(Object.keys(states), {
         placeHolder: "Select a state",
       });
-
       if (picked) {
         current = picked;
         updateStatusBar(item, current, flowInfo, states);
 
-        // persist across reloads
-        await context.globalState.update("statusbarToggleState", current);
+        // Persist workspace-specific state
+        await context.workspaceState.update("statusbarToggleState", current);
 
-        // persist status bar background too
+        // Update status bar background
         const config = vscode.workspace.getConfiguration();
         config.update(
           "workbench.colorCustomizations",
@@ -44,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
             "statusBar.background": states[current],
             "statusBar.noFolderBackground": states[current],
             "statusBar.debuggingBackground": states[current],
-            "statusBar.foreground": "#FFFFFF", // always white text
+            "statusBar.foreground": "#FFFFFF",
           },
           vscode.ConfigurationTarget.Global
         );
@@ -52,29 +69,27 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  // Command 2: Add Flow Info
+  // Command 2: Add flow info
   const addFlowInfoCmd = vscode.commands.registerCommand(
     "statusbarToggle.addFlowInfo",
     async () => {
       const input = await vscode.window.showInputBox({
         placeHolder: "Enter current flow information",
       });
-
       if (input !== undefined) {
         flowInfo = input.trim();
         updateStatusBar(item, current, flowInfo, states);
 
-        // persist across reloads
-        await context.globalState.update("statusbarFlowInfo", flowInfo);
+        // Persist workspace-specific flow info
+        await context.workspaceState.update("statusbarFlowInfo", flowInfo);
       }
     }
   );
 
-  context.subscriptions.push(item);
-  context.subscriptions.push(selectStateCmd);
-  context.subscriptions.push(addFlowInfoCmd);
+  context.subscriptions.push(item, selectStateCmd, addFlowInfoCmd);
 }
 
+// Helper to update status bar text and tooltip
 function updateStatusBar(
   item: vscode.StatusBarItem,
   state: string,
@@ -87,7 +102,7 @@ function updateStatusBar(
   item.tooltip = flowInfo
     ? `Current state: ${state}\nFlow: ${flowInfo}`
     : `Current state: ${state}`;
-  item.color = "#FFFFFF"; // always white text
+  item.color = "#FFFFFF"; // always white
 }
 
 export function deactivate() {}

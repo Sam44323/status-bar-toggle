@@ -11,17 +11,18 @@ export function activate(context: vscode.ExtensionContext) {
   // Load saved state (fallback to DEFAULT)
   let current =
     context.globalState.get<string>("statusbarToggleState") || "DEFAULT";
+  let flowInfo = context.globalState.get<string>("statusbarFlowInfo") || "";
 
   // Create status bar item
   const item = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left,
     100
   );
-  updateStatusBar(item, current, states);
+  updateStatusBar(item, current, flowInfo, states);
   item.show();
 
-  // Register command
-  const disposable = vscode.commands.registerCommand(
+  // Command 1: Select State
+  const selectStateCmd = vscode.commands.registerCommand(
     "statusbarToggle.selectState",
     async () => {
       const picked = await vscode.window.showQuickPick(Object.keys(states), {
@@ -30,7 +31,7 @@ export function activate(context: vscode.ExtensionContext) {
 
       if (picked) {
         current = picked;
-        updateStatusBar(item, current, states);
+        updateStatusBar(item, current, flowInfo, states);
 
         // persist across reloads
         await context.globalState.update("statusbarToggleState", current);
@@ -51,17 +52,41 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
+  // Command 2: Add Flow Info
+  const addFlowInfoCmd = vscode.commands.registerCommand(
+    "statusbarToggle.addFlowInfo",
+    async () => {
+      const input = await vscode.window.showInputBox({
+        placeHolder: "Enter current flow information",
+      });
+
+      if (input !== undefined) {
+        flowInfo = input.trim();
+        updateStatusBar(item, current, flowInfo, states);
+
+        // persist across reloads
+        await context.globalState.update("statusbarFlowInfo", flowInfo);
+      }
+    }
+  );
+
   context.subscriptions.push(item);
-  context.subscriptions.push(disposable);
+  context.subscriptions.push(selectStateCmd);
+  context.subscriptions.push(addFlowInfoCmd);
 }
 
 function updateStatusBar(
   item: vscode.StatusBarItem,
   state: string,
+  flowInfo: string,
   states: { [key: string]: string }
 ) {
-  item.text = `$(person) ${state}`;
-  item.tooltip = `Current state: ${state}`;
+  item.text = flowInfo
+    ? `$(person) ${state} | $(comment) ${flowInfo}`
+    : `$(person) ${state}`;
+  item.tooltip = flowInfo
+    ? `Current state: ${state}\nFlow: ${flowInfo}`
+    : `Current state: ${state}`;
   item.color = "#FFFFFF"; // always white text
 }
 

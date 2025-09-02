@@ -25,6 +25,10 @@
       {
         "command": "statusbarToggle.selectState",
         "title": "Select Status Bar State"
+      },
+      {
+        "command": "statusbarToggle.addFlowInfo",
+        "title": "Add the Current-Flow Information"
       }
     ]
   },

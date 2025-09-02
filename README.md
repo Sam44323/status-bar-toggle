@@ -34,6 +34,16 @@ Each state changes both the **status bar text** and the **entire status bar colo
 **Run Command from Palette**
 ![Command Palette](images/command.png)
 
+### Current-Flow
+
+**Current-Flow Text**
+
+![Current-Flow Text](images/current-flow-text.png)
+
+**Current Flow Message**
+
+![Current-Flow Message](images/current-flow-message.png)
+
 ---
 
 ### ✨ Features
@@ -47,6 +57,10 @@ Each state changes both the **status bar text** and the **entire status bar colo
   - `CORRECT-EXECUTION` → Dark-Green
 - The **entire status bar background color** updates automatically.
 - Always ensures white text for readability.
+- **Add current-flow information** via a command — displays next to the state in the status bar.
+- Both **state** and **flow info** are **saved** and restored on VS Code restart.
+- **Dark background** per state with **white text** for readability.
+- Click the status bar item or use the **Command Palette** to change states or add flow info.
 
 ---
 

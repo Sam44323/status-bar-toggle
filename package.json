@@ -32,6 +32,10 @@
       {
         "command": "statusbarToggle.addFlowInfo",
         "title": "Add the Current-Flow Information"
+      },
+      {
+        "command": "statusbarToggle.addReminder",
+        "title": "Add A Reminder"
       }
     ]
   },

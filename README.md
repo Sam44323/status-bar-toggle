@@ -44,6 +44,17 @@ Each state-changes both the **status bar text** and the **entire status bar colo
 
 ![Current-Flow Message](images/current-flow-message.png)
 
+### Reminder
+
+**Invoke the Command**
+![Command for reminder](images/reminder-command.png)
+
+**Add A Reminder**
+![Add A Reminder](images/reminder-text.png)
+
+**Notification For The Reminder**
+![Notification For The Reminder](images/reminder.png)
+
 ---
 
 ### ✨ Features
@@ -62,6 +73,10 @@ Each state-changes both the **status bar text** and the **entire status bar colo
 - **Dark background** per state with **white text** for readability.
 - Click the status bar item or use the **Command Palette** to change states or add flow info.
 - Support for multi-window state
+- Reminders
+  - Add a reminder that shows up every time you reopen the workspace.
+  - Notification is a subtle toast in the bottom-right corner.  
+  - You can Mark as Read to clear it, or Dismiss to snooze until next-reopen.
 
 ---
 

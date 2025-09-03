@@ -1,108 +1,87 @@
 import * as vscode from "vscode";
 
 export function activate(context: vscode.ExtensionContext) {
-  // Define the states and corresponding dark-colors
-  const states: { [key: string]: string } = {
-    DEFAULT: "#444444",
-    ATTACKER: "#800000",
-    USER: "#6A0DAD",
-    "CORRECT-EXECUTION": "#006400",
-  };
+  const states = ["DEFAULT", "ATTACKER", "USER", "CORRECT-EXECUTION"];
 
-  // Load workspace-scoped persisted state
-  let current =
-    context.workspaceState.get<string>("statusbarToggleState") || "DEFAULT";
-  let flowInfo = context.workspaceState.get<string>("statusbarFlowInfo") || "";
+  let current = context.workspaceState.get(
+    "statusbarToggle.current",
+    states[0]
+  );
+  let flowInfo = context.workspaceState.get("statusbarToggle.flowInfo", "");
+  let reminder = context.workspaceState.get("statusbarToggle.reminder", "");
 
-  // Create the status bar item
+  // --- Status Bar item ---
   const item = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left,
     100
   );
-
-  // Ensure status-bar is rendered on startup
-  setTimeout(() => {
-    updateStatusBar(item, current, flowInfo, states);
+  const updateStatusBar = () => {
+    item.text = `$(person) ${current}${flowInfo ? " | " + flowInfo : ""}`;
+    item.color = "#FFFFFF"; // white text
     item.show();
+  };
+  updateStatusBar();
 
-    // Restore background color
-    const config = vscode.workspace.getConfiguration();
-    config.update(
-      "workbench.colorCustomizations",
-      {
-        "statusBar.background": states[current],
-        "statusBar.noFolderBackground": states[current],
-        "statusBar.debuggingBackground": states[current],
-        "statusBar.foreground": "#FFFFFF", // always white-text
-      },
-      vscode.ConfigurationTarget.Global
-    );
-  }, 100);
+  // --- Show reminder as a subtle toast on startup ---
+  if (reminder) {
+    vscode.window
+      .showInformationMessage(
+        `🔔 Reminder: ${reminder}`,
+        "Mark as Read",
+        "Dismiss"
+      )
+      .then((selection) => {
+        if (selection === "Mark as Read") {
+          context.workspaceState.update("statusbarToggle.reminder", "");
+        }
+        // If dismissed → reminder persists and will show again on next reopen
+      });
+  }
 
-  // Command A: Toggle state
-  const selectStateCmd = vscode.commands.registerCommand(
+  // --- Commands ---
+  const selectState = vscode.commands.registerCommand(
     "statusbarToggle.selectState",
     async () => {
-      const picked = await vscode.window.showQuickPick(Object.keys(states), {
+      const picked = await vscode.window.showQuickPick(states, {
         placeHolder: "Select a state",
       });
       if (picked) {
         current = picked;
-        updateStatusBar(item, current, flowInfo, states);
-
-        // Persist workspace-specific state
-        await context.workspaceState.update("statusbarToggleState", current);
-
-        // Update status bar background
-        const config = vscode.workspace.getConfiguration();
-        config.update(
-          "workbench.colorCustomizations",
-          {
-            "statusBar.background": states[current],
-            "statusBar.noFolderBackground": states[current],
-            "statusBar.debuggingBackground": states[current],
-            "statusBar.foreground": "#FFFFFF",
-          },
-          vscode.ConfigurationTarget.Global
-        );
+        context.workspaceState.update("statusbarToggle.current", current);
+        updateStatusBar();
       }
     }
   );
 
-  // Command B: Add flow info
-  const addFlowInfoCmd = vscode.commands.registerCommand(
+  const addFlowInfo = vscode.commands.registerCommand(
     "statusbarToggle.addFlowInfo",
     async () => {
       const input = await vscode.window.showInputBox({
-        placeHolder: "Enter current flow information",
+        prompt: "Enter flow info",
       });
-      if (input !== undefined) {
-        flowInfo = input.trim();
-        updateStatusBar(item, current, flowInfo, states);
-
-        // Persist workspace-specific flow info
-        await context.workspaceState.update("statusbarFlowInfo", flowInfo);
+      if (input) {
+        flowInfo = input;
+        context.workspaceState.update("statusbarToggle.flowInfo", flowInfo);
+        updateStatusBar();
       }
     }
   );
 
-  context.subscriptions.push(item, selectStateCmd, addFlowInfoCmd);
-}
+  const addReminder = vscode.commands.registerCommand(
+    "statusbarToggle.addReminder",
+    async () => {
+      const input = await vscode.window.showInputBox({
+        prompt: "Enter a reminder (will show on reopen)",
+      });
+      if (input) {
+        reminder = input;
+        context.workspaceState.update("statusbarToggle.reminder", reminder);
+        vscode.window.showInformationMessage(`Reminder saved: ${reminder}`);
+      }
+    }
+  );
 
-// Helper to update status bar text and tooltip
-function updateStatusBar(
-  item: vscode.StatusBarItem,
-  state: string,
-  flowInfo: string,
-  states: { [key: string]: string }
-) {
-  item.text = flowInfo
-    ? `$(person) ${state} | $(comment) ${flowInfo}`
-    : `$(person) ${state}`;
-  item.tooltip = flowInfo
-    ? `Current state: ${state}\nFlow: ${flowInfo}`
-    : `Current state: ${state}`;
-  item.color = "#FFFFFF"; // always white
+  context.subscriptions.push(item, selectState, addFlowInfo, addReminder);
 }
 
 export function deactivate() {}

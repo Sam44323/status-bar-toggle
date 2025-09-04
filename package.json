@@ -4,7 +4,7 @@
   "description": "toggle the status bar with the tags",
   "license": "MIT",
   "publisher": "sam44323",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -25,43 +25,43 @@
   "icon": "icon.png",
   "contributes": {
     "colors": [
-    {
-      "id": "statusbarToggle.attackerBackground",
-      "description": "Status bar background for ATTACKER",
-      "defaults": {
-        "dark": "#8B0000",
-        "light": "#FF4444",
-        "highContrast": "#FF0000"
+      {
+        "id": "statusbarToggle.attackerBackground",
+        "description": "Status bar background for ATTACKER",
+        "defaults": {
+          "dark": "#8B0000",
+          "light": "#FF4444",
+          "highContrast": "#FF0000"
+        }
+      },
+      {
+        "id": "statusbarToggle.userBackground",
+        "description": "Status bar background for USER",
+        "defaults": {
+          "dark": "#006400",
+          "light": "#00AA00",
+          "highContrast": "#00FF00"
+        }
+      },
+      {
+        "id": "statusbarToggle.correctExecutionBackground",
+        "description": "Status bar background for CORRECT-EXECUTION",
+        "defaults": {
+          "dark": "#006400",
+          "light": "#228B22",
+          "highContrast": "#00FF00"
+        }
+      },
+      {
+        "id": "statusbarToggle.defaultBackground",
+        "description": "Status bar background for DEFAULT",
+        "defaults": {
+          "dark": "#1E1E1E",
+          "light": "#F3F3F3",
+          "highContrast": "#000000"
+        }
       }
-    },
-    {
-      "id": "statusbarToggle.userBackground",
-      "description": "Status bar background for USER",
-      "defaults": {
-        "dark": "#006400",
-        "light": "#00AA00",
-        "highContrast": "#00FF00"
-      }
-    },
-    {
-      "id": "statusbarToggle.correctExecutionBackground",
-      "description": "Status bar background for CORRECT-EXECUTION",
-      "defaults": {
-        "dark": "#006400",
-        "light": "#228B22",
-        "highContrast": "#00FF00"
-      }
-    },
-    {
-      "id": "statusbarToggle.defaultBackground",
-      "description": "Status bar background for DEFAULT",
-      "defaults": {
-        "dark": "#1E1E1E",
-        "light": "#F3F3F3",
-        "highContrast": "#000000"
-      }
-    }
-  ],
+    ],
     "commands": [
       {
         "command": "statusbarToggle.selectState",

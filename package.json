@@ -74,6 +74,14 @@
       {
         "command": "statusbarToggle.addReminder",
         "title": "Add A Reminder"
+      },
+      {
+        "command": "hotpoints.add",
+        "title": "Hotpoints: From Selection"
+      },
+      {
+        "command": "hotpoints.list",
+        "title": "Hotpoints: List and Manage"
       }
     ]
   },

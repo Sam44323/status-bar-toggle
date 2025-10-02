@@ -10,17 +10,17 @@ export function activate(context: vscode.ExtensionContext) {
   let flowInfo = context.workspaceState.get("statusbarToggle.flowInfo", "");
   let reminder = context.workspaceState.get("statusbarToggle.reminder", "");
 
-  // status bar item (text only) — we will color the whole bar via workbench.colorCustomizations
+  // status bar item (text only)
   const item = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left,
     100
   );
 
-  // map each state to a hex color for the whole status bar
+  // map each state to a hex color
   const stateToHex: Record<string, string | undefined> = {
-    DEFAULT: undefined, // restore user's original
+    DEFAULT: undefined,
     ATTACKER: "#8B0000", // dark red
-    USER: "#007ACC", // vscode-blue (readable with white text)
+    USER: "#007ACC", // vscode-blue
     "CORRECT-EXECUTION": "#008000", // green
   };
 
@@ -33,7 +33,6 @@ export function activate(context: vscode.ExtensionContext) {
 
     try {
       if (hex) {
-        // Save original customizations (only once)
         if (!context.workspaceState.get("statusbarToggle.originalColors")) {
           await context.workspaceState.update(
             "statusbarToggle.originalColors",
@@ -41,18 +40,15 @@ export function activate(context: vscode.ExtensionContext) {
           );
         }
 
-        // Merge in our status bar overrides (preserve other user customizations)
         const merged = {
           ...currentCustomizations,
           "statusBar.background": hex,
           "statusBar.foreground": "#FFFFFF",
-          // Also ensure no-folder variant (optional)
           "statusBar.noFolderBackground": hex,
         };
 
         await config.update(key, merged, vscode.ConfigurationTarget.Global);
       } else {
-        // Restore original if present
         const original = context.workspaceState.get<Record<string, unknown>>(
           "statusbarToggle.originalColors"
         );
@@ -63,7 +59,6 @@ export function activate(context: vscode.ExtensionContext) {
             undefined
           );
         } else {
-          // if no original saved, remove only the keys we may have added
           const cleaned = { ...currentCustomizations };
           delete cleaned["statusBar.background"];
           delete cleaned["statusBar.foreground"];
@@ -72,7 +67,6 @@ export function activate(context: vscode.ExtensionContext) {
         }
       }
     } catch (err) {
-      // Log and surface small message, but do not crash extension
       console.error("Failed to update workbench.colorCustomizations:", err);
       vscode.window.showWarningMessage(
         "Could not change status bar color (check settings permissions)."
@@ -82,25 +76,22 @@ export function activate(context: vscode.ExtensionContext) {
 
   const updateStatusBar = () => {
     item.text = `$(person) ${current}${flowInfo ? " | " + flowInfo : ""}`;
-    // Important: leave item.color undefined so statusBar.foreground (global) controls text color.
     item.color = undefined;
-    // Do not set item.backgroundColor — we're changing the entire bar via settings.
     item.show();
   };
 
-  // initialize: apply color for the saved current state if needed
+  // initialize
   (async () => {
     const hex = stateToHex[current as string];
     if (hex) {
       await applyStatusBarColor(hex);
     } else {
-      // ensure any previous state reset is applied (if DEFAULT)
       await applyStatusBarColor(undefined);
     }
     updateStatusBar();
   })();
 
-  // reminder popup (unchanged)
+  // reminder popup
   if (reminder) {
     vscode.window
       .showInformationMessage(
@@ -115,7 +106,7 @@ export function activate(context: vscode.ExtensionContext) {
       });
   }
 
-  // Commands
+  // Commands: state, flow info, reminder
   const selectState = vscode.commands.registerCommand(
     "statusbarToggle.selectState",
     async () => {
@@ -130,7 +121,6 @@ export function activate(context: vscode.ExtensionContext) {
         if (hex) {
           await applyStatusBarColor(hex);
         } else {
-          // DEFAULT -> restore
           await applyStatusBarColor(undefined);
         }
 
@@ -175,19 +165,117 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(item, selectState, addFlowInfo, addReminder);
 
-  // Make sure we restore on deactivate as a safety
+  // restore on deactivate
   context.subscriptions.push({
     dispose: async () => {
-      // restore original when extension is deactivated/unloaded
       await applyStatusBarColor(undefined);
     },
   });
+
+  // ---------------- HOTPOINT FEATURE ----------------
+
+  interface Hotpoint {
+    uri: string; // file URI
+    range: vscode.Range;
+    text: string;
+  }
+
+  const hotpoints: Hotpoint[] = context.workspaceState.get<Hotpoint[]>(
+    "hotpoints",
+    []
+  );
+
+  // faded red with 15% opacity
+  const hotpointDecoration = vscode.window.createTextEditorDecorationType({
+    backgroundColor: "rgba(255,0,0,0.15)",
+  });
+
+  function refreshHotpoints() {
+    vscode.window.visibleTextEditors.forEach((editor) => {
+      const ranges = hotpoints
+        .filter((h) => h.uri === editor.document.uri.toString())
+        .map((h) => h.range);
+      editor.setDecorations(hotpointDecoration, ranges);
+    });
+  }
+
+  async function saveHotpoints() {
+    await context.workspaceState.update("hotpoints", hotpoints);
+    refreshHotpoints();
+  }
+
+  const addHotpoint = vscode.commands.registerCommand(
+    "hotpoints.add",
+    async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) return;
+
+      const selection = editor.selection;
+      if (selection.isEmpty) {
+        vscode.window.showWarningMessage("Select code to mark as hotpoint.");
+        return;
+      }
+
+      const text = editor.document.getText(selection);
+      hotpoints.push({
+        uri: editor.document.uri.toString(),
+        range: selection,
+        text: text.slice(0, 50) + (text.length > 50 ? "…" : ""),
+      });
+
+      await saveHotpoints();
+    }
+  );
+
+  const listHotpoints = vscode.commands.registerCommand(
+    "hotpoints.list",
+    async () => {
+      if (hotpoints.length === 0) {
+        vscode.window.showInformationMessage("No hotpoints set.");
+        return;
+      }
+
+      const picked = await vscode.window.showQuickPick(
+        hotpoints.map((h, i) => ({
+          label: h.text,
+          description: vscode.Uri.parse(h.uri).fsPath,
+          index: i,
+        })),
+        { placeHolder: "Select a hotpoint" }
+      );
+
+      if (!picked) return;
+
+      const hotpoint = hotpoints[picked.index];
+      const doc = await vscode.workspace.openTextDocument(
+        vscode.Uri.parse(hotpoint.uri)
+      );
+      const editor = await vscode.window.showTextDocument(doc);
+      editor.selection = new vscode.Selection(
+        hotpoint.range.start,
+        hotpoint.range.end
+      );
+      editor.revealRange(hotpoint.range, vscode.TextEditorRevealType.InCenter);
+
+      const action = await vscode.window.showQuickPick(["Go", "Delete"], {
+        placeHolder: "Do you want to delete this hotpoint?",
+      });
+      if (action === "Delete") {
+        hotpoints.splice(picked.index, 1);
+        await saveHotpoints();
+      }
+    }
+  );
+
+  context.subscriptions.push(addHotpoint, listHotpoints);
+
+  vscode.window.onDidChangeVisibleTextEditors(refreshHotpoints);
+  vscode.workspace.onDidChangeTextDocument(refreshHotpoints);
+
+  refreshHotpoints();
 }
 
-// deactivate: ensure restoration (VS Code will await a Promise if returned)
+// deactivate
 export async function deactivate() {
-  // nothing else required because the subscription restore should run,
-  // but also ensure restoration here:
-  // NOTE: we can't access the context here; the disposable above already restores.
   return;
 }

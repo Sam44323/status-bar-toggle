@@ -4,7 +4,7 @@
   "description": "toggle the status bar with the tags",
   "license": "MIT",
   "publisher": "sam44323",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "engines": {
     "vscode": "^1.103.0"
   },

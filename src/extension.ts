@@ -245,7 +245,7 @@ export function activate(context: vscode.ExtensionContext) {
     "hotpoints.list",
     async () => {
       if (hotpoints.length === 0) {
-        vscode.window.showInformationMessage("No hotpoints set.");
+        vscode.window.showInformationMessage("No hotpoints set for yet.");
         return;
       }
 

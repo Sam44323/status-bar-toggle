@@ -78,6 +78,11 @@ Each state-changes both the **status bar text** and the **entire status bar colo
   - Notification is a subtle toast in the bottom-right corner.  
   - You can Mark as Read to clear it, or Dismiss to snooze until next-reopen.
 
+- SUpport for Hotpoints
+  - Add hotpoints that shows up when you run the command `Hotpoints: List Hotpoints`.
+  - You can select a hotpoint to copy it to clipboard.
+  - You can also delete a hotpoint.
+
 ---
 
 ### 🚀 Usage

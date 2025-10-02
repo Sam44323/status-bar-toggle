@@ -176,6 +176,8 @@ export function activate(context: vscode.ExtensionContext) {
 
   // ---------------- HOTPOINT FEATURE ----------------
 
+  // ---------------- HOTPOINT FEATURE ----------------
+
   interface Hotpoint {
     uri: string; // file URI
     range: vscode.Range;
@@ -189,7 +191,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   // faded red with 15% opacity
   const hotpointDecoration = vscode.window.createTextEditorDecorationType({
-    backgroundColor: "rgba(255,0,0,0.30)",
+    backgroundColor: "rgba(255,0,0,0.15)",
   });
 
   function refreshHotpoints() {

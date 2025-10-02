@@ -189,7 +189,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   // faded red with 15% opacity
   const hotpointDecoration = vscode.window.createTextEditorDecorationType({
-    backgroundColor: "rgba(255,0,0,0.15)",
+    backgroundColor: "rgba(255,0,0,0.30)",
   });
 
   function refreshHotpoints() {

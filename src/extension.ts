@@ -174,10 +174,12 @@ export function activate(context: vscode.ExtensionContext) {
 
   // ---------------- HOTPOINT FEATURE ----------------
 
+  // ---------------- HOTPOINT FEATURE ----------------
+
   interface Hotpoint {
     uri: string; // file URI
     range: vscode.Range;
-    text: string;
+    name: string; // user-provided label
   }
 
   const hotpoints: Hotpoint[] = context.workspaceState.get<Hotpoint[]>(
@@ -216,11 +218,21 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      const text = editor.document.getText(selection);
+      // ask user for a name
+      const name = await vscode.window.showInputBox({
+        prompt: "Enter a name for this hotpoint",
+        placeHolder: "e.g. Critical function, API call, loop bug",
+      });
+
+      if (!name) {
+        vscode.window.showWarningMessage("Hotpoint name is required.");
+        return;
+      }
+
       hotpoints.push({
         uri: editor.document.uri.toString(),
         range: selection,
-        text: text.slice(0, 50) + (text.length > 50 ? "…" : ""),
+        name,
       });
 
       await saveHotpoints();
@@ -237,7 +249,7 @@ export function activate(context: vscode.ExtensionContext) {
 
       const picked = await vscode.window.showQuickPick(
         hotpoints.map((h, i) => ({
-          label: h.text,
+          label: h.name, // use name instead of code snippet
           description: vscode.Uri.parse(h.uri).fsPath,
           index: i,
         })),
